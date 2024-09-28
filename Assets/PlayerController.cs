@@ -12,8 +12,12 @@ public class PlayerController : MonoBehaviour
     private Queue<string> movementQueue = new Queue<string>(); // Store planned movements
 
     public Button playButton;  // Reference to the Play button in the UI
+    private Rigidbody2D rb;    // Reference to the player's Rigidbody2D component
+
     void Start()
     {
+        // Get the Rigidbody2D component attached to the player
+        rb = GetComponent<Rigidbody2D>();
         // Set up the Play button's onClick event to trigger the movement plan
         playButton.onClick.AddListener(StartMovement);
     }
@@ -104,22 +108,23 @@ public class PlayerController : MonoBehaviour
     {
         // Calculate movement based on the screen size (camera view size)
         float moveDistance = Camera.main.orthographicSize * 2 * Camera.main.aspect / 10f; // Adjusting by 10 for 1/10th screen unit move
-        Vector3 targetPosition = transform.position + new Vector3(direction.x * moveDistance, 0, 0);
+        Vector2 targetPosition = rb.position + new Vector2(direction.x * moveDistance, 0);
 
         // Move over time to simulate smooth movement
         float elapsedTime = 0f;
-        Vector3 startingPosition = transform.position;
+        Vector2 startingPosition = rb.position;
         float moveSpeed = 2f;
 
         while (elapsedTime < moveDuration)
         {
-            transform.position = Vector3.Lerp(startingPosition, targetPosition, (elapsedTime / moveDuration));
+            Vector2 newPosition = Vector2.Lerp(startingPosition, targetPosition, elapsedTime / moveDuration);
+            rb.MovePosition(newPosition);  // Use Rigidbody2D.MovePosition for physics-based movement
             elapsedTime += Time.deltaTime * moveSpeed;
-            yield return null;
+            yield return null;  // Wait for the next frame
         }
 
         // Ensure exact final position after movement
-        transform.position = targetPosition;
+        rb.MovePosition(targetPosition);
     }
 
     // Method to make the player jump

@@ -7,13 +7,14 @@ using TMPro;  // Uncomment if using TextMeshPro
 
 public class PlayerController : MonoBehaviour
 {
-    public float jumpForce = 5f;
+    public float jumpForce = 7f;
     public float moveDuration = 1f;
     private bool isGrounded = true;
     private bool isPlaying = false;
     private Queue<string> movementQueue = new Queue<string>();
     private List<string> movementList = new List<string>();
     public EnemyController enemy;  // Reference to the enemy's controller script
+    public float horizontalForce = 2f; // Force applied when moving horizontally
 
 
     public Button playButton;
@@ -199,7 +200,8 @@ public class PlayerController : MonoBehaviour
     {
         if (isGrounded)
         {
-            rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            rb.AddForce(new Vector2(1.0f * horizontalForce, jumpForce), ForceMode2D.Impulse);
+            isGrounded = false;  // Prevent further jumping in mid-air
         }
     }
 }

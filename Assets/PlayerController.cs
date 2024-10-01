@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;  // Import UI for standard Text
 using TMPro;  // Uncomment if using TextMeshPro
 
+
 public class PlayerController : MonoBehaviour
 {
     public float jumpForce = 5f;
@@ -12,6 +13,8 @@ public class PlayerController : MonoBehaviour
     private bool isPlaying = false;
     private Queue<string> movementQueue = new Queue<string>();
     private List<string> movementList = new List<string>();
+    public EnemyController enemy;  // Reference to the enemy's controller script
+
 
     public Button playButton;
     private Rigidbody2D rb;
@@ -133,6 +136,12 @@ public class PlayerController : MonoBehaviour
         {
             isPlaying = true;
             StartCoroutine(ExecutePlannedMovement());
+
+            // Trigger the enemy's movement when the player starts moving
+            if (enemy != null)
+            {
+                enemy.StartEnemyMovement();
+            }
         }
     }
 

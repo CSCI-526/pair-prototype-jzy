@@ -1,82 +1,146 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UI;  // Import UI for standard Text
+using TMPro;  // Uncomment if using TextMeshPro
 
 public class PlayerController : MonoBehaviour
 {
-    public float jumpForce = 5f;       // Force applied when jumping
-    public float moveDuration = 1f;    // Duration for waiting between moves
-    private bool isGrounded = true;    // Check if player is on the ground
-    private bool isPlaying = false;    // To prevent multiple executions
-    private Queue<string> movementQueue = new Queue<string>(); // Store planned movements
+    public float jumpForce = 5f;
+    public float moveDuration = 1f;
+    private bool isGrounded = true;
+    private bool isPlaying = false;
+    private Queue<string> movementQueue = new Queue<string>();
+    private List<string> movementList = new List<string>();
 
-    public Button playButton;  // Reference to the Play button in the UI
-    private Rigidbody2D rb;    // Reference to the player's Rigidbody2D component
+    public Button playButton;
+    private Rigidbody2D rb;
+
+    // Reference to the UI Text to display the movements
+    //public Text movementText;  // Standard UI Text
+    public TextMeshProUGUI movementText; // Uncomment if using TextMeshPro
 
     void Start()
     {
-        // Get the Rigidbody2D component attached to the player
         rb = GetComponent<Rigidbody2D>();
-        // Set up the Play button's onClick event to trigger the movement plan
         playButton.onClick.AddListener(StartMovement);
+
+        // Initialize the text display
+        UpdateMovementText();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        // isGrounded check
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);
         isGrounded = hit.collider != null;
 
-        // Allow user to plan movements using keys
         PlanMovementInput();
+
+        // Handle input deletion
+        if (Input.GetKeyDown(KeyCode.Backspace))
+        {
+            RemoveLastInput();
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ClearAllInputs();
+        }
     }
 
-    // Method to check player input and queue the movements
+    // Method to plan player movement input
     void PlanMovementInput()
     {
-        if (Input.GetKeyDown(KeyCode.D))  // Plan Right move
+        if (Input.GetKeyDown(KeyCode.D))
         {
             movementQueue.Enqueue("right");
-            Debug.Log("Move Right planned");
+            movementList.Add("right");
+            UpdateMovementText();  // Update the UI Text
         }
 
-        if (Input.GetKeyDown(KeyCode.A))  // Plan Left move
+        if (Input.GetKeyDown(KeyCode.A))
         {
             movementQueue.Enqueue("left");
-            Debug.Log("Move Left planned");
+            movementList.Add("left");
+            UpdateMovementText();  // Update the UI Text
         }
 
-        if (Input.GetKeyDown(KeyCode.W))  // Plan Jump
+        if (Input.GetKeyDown(KeyCode.W))
         {
             movementQueue.Enqueue("jump");
-            Debug.Log("Jump planned");
+            movementList.Add("jump");
+            UpdateMovementText();  // Update the UI Text
         }
 
-        if (Input.GetKeyDown(KeyCode.S))  // Plan Wait
+        if (Input.GetKeyDown(KeyCode.S))
         {
             movementQueue.Enqueue("wait");
-            Debug.Log("Wait planned");
+            movementList.Add("wait");
+            UpdateMovementText();  // Update the UI Text
         }
     }
 
-    // This method starts executing the planned movements when Play button is pressed
+    // Method to remove the last planned input
+    void RemoveLastInput()
+    {
+        if (movementList.Count > 0)
+        {
+            movementList.RemoveAt(movementList.Count - 1);
+            RebuildQueue();
+            UpdateMovementText();  // Update the UI Text after removal
+        }
+    }
+
+    // Method to clear all planned inputs
+    void ClearAllInputs()
+    {
+        movementList.Clear();
+        RebuildQueue();
+        UpdateMovementText();  // Update the UI Text after clearing
+    }
+
+    // Rebuild the queue based on the updated list
+    void RebuildQueue()
+    {
+        movementQueue.Clear();
+        foreach (string move in movementList)
+        {
+            movementQueue.Enqueue(move);
+        }
+    }
+
+    // Method to update the movement text on the UI
+    void UpdateMovementText()
+    {
+        movementText.text = "Planned Movements: ";
+
+        if (movementList.Count == 0)
+        {
+            movementText.text += "None";  // Display None if no movements are planned
+        }
+        else
+        {
+            foreach (string move in movementList)
+            {
+                movementText.text += move + " ";  // Concatenate the planned movements
+            }
+        }
+    }
+
     public void StartMovement()
     {
-        if (!isPlaying && movementQueue.Count > 0)  // Prevent multiple executions and ensure there are planned moves
+        if (!isPlaying && movementQueue.Count > 0)
         {
             isPlaying = true;
             StartCoroutine(ExecutePlannedMovement());
         }
     }
 
-    // Coroutine to execute the planned movement from the queue
     IEnumerator ExecutePlannedMovement()
     {
         while (movementQueue.Count > 0)
         {
-            string nextMove = movementQueue.Dequeue();  // Get the next planned movement
+            string nextMove = movementQueue.Dequeue();
 
             switch (nextMove)
             {
@@ -90,27 +154,23 @@ public class PlayerController : MonoBehaviour
                     if (isGrounded)
                     {
                         Jump();
-                        yield return new WaitForSeconds(1f);  // Wait for jump completion
+                        yield return new WaitForSeconds(1f);
                     }
                     break;
                 case "wait":
-                    yield return new WaitForSeconds(moveDuration);  // Simply wait
+                    yield return new WaitForSeconds(moveDuration);
                     break;
             }
         }
 
-        // When all movements are executed, reset isPlaying to allow future executions
         isPlaying = false;
     }
 
-    // Method to move the player left or right
     IEnumerator MovePlayer(Vector2 direction)
     {
-        // Calculate movement based on the screen size (camera view size)
-        float moveDistance = Camera.main.orthographicSize * 2 * Camera.main.aspect / 10f; // Adjusting by 10 for 1/10th screen unit move
+        float moveDistance = Camera.main.orthographicSize * 2 * Camera.main.aspect / 10f;
         Vector2 targetPosition = rb.position + new Vector2(direction.x * moveDistance, 0);
 
-        // Move over time to simulate smooth movement
         float elapsedTime = 0f;
         Vector2 startingPosition = rb.position;
         float moveSpeed = 2f;
@@ -118,26 +178,19 @@ public class PlayerController : MonoBehaviour
         while (elapsedTime < moveDuration)
         {
             Vector2 newPosition = Vector2.Lerp(startingPosition, targetPosition, elapsedTime / moveDuration);
-            rb.MovePosition(newPosition);  // Use Rigidbody2D.MovePosition for physics-based movement
+            rb.MovePosition(newPosition);
             elapsedTime += Time.deltaTime * moveSpeed;
-            yield return null;  // Wait for the next frame
+            yield return null;
         }
 
-        // Ensure exact final position after movement
         rb.MovePosition(targetPosition);
     }
 
-    // Method to make the player jump
     void Jump()
     {
         if (isGrounded)
         {
-            // Apply upward force to the player to make them jump
-            Rigidbody2D rb = GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
-            }
+            rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
         }
     }
 }

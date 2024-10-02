@@ -15,29 +15,44 @@ public class EnemyController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        PlanEnemyMovements();
+        //PlanEnemyMovements(1);
     }
 
-    // This method starts the enemy's movement when called
-    public void StartEnemyMovement()
+    // Start the enemy movement based on the number of turns
+    public void StartEnemyMovement(int playCount)
     {
-        if (!isMoving && movementQueue.Count > 0)
+        if (!isMoving)
         {
-            isMoving = true;
-            Debug.Log("Enemy movement started.");
-            StartCoroutine(ExecuteEnemyMovements());
+            // Plan movements based on the play count (1st or 2nd time)
+            PlanEnemyMovements(playCount);
+
+            if (movementQueue.Count > 0)
+            {
+                isMoving = true;
+                StartCoroutine(ExecuteEnemyMovements());
+            }
         }
     }
 
-    // Method to queue up enemy movements (could be planned in advance)
-    public void PlanEnemyMovements()
+    // Plan different movements for each play turn
+    public void PlanEnemyMovements(int playCount)
     {
-        // Example enemy movement pattern: move right, jump, move left
-        movementQueue.Enqueue("left");
-        movementQueue.Enqueue("left");
-        movementQueue.Enqueue("wait");
-        Debug.Log("Enemy movements planned.");
+        movementQueue.Clear();
+
+        if (playCount == 1)  // First play turn
+        {
+            movementQueue.Enqueue("left");
+            movementQueue.Enqueue("left");
+            movementQueue.Enqueue("wait");
+        }
+        else if (playCount == 2)  // Second play turn
+        {
+            movementQueue.Enqueue("jump");
+            movementQueue.Enqueue("left");
+            movementQueue.Enqueue("left");
+        }
     }
+
 
     // Coroutine to execute the planned movement from the queue
     IEnumerator ExecuteEnemyMovements()

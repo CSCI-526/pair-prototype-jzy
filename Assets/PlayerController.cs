@@ -36,8 +36,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);
-        isGrounded = hit.collider != null;
+        CheckIfGrounded();
 
         PlanMovementInput();
 
@@ -51,6 +50,13 @@ public class PlayerController : MonoBehaviour
         {
             ClearAllInputs();
         }
+    }
+
+    // Method to check if the player is grounded
+    private void CheckIfGrounded()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.3f);
+        isGrounded = hit.collider != null;
     }
 
     // Method to plan player movement input
@@ -165,11 +171,7 @@ public class PlayerController : MonoBehaviour
                     yield return StartCoroutine(MovePlayer(Vector2.left));
                     break;
                 case "jump":
-                    if (isGrounded)
-                    {
-                        Jump();
-                        yield return new WaitForSeconds(1f);
-                    }
+                    yield return StartCoroutine(WaitForGroundAndExecute(() => Jump()));
                     break;
                 case "wait":
                     yield return new WaitForSeconds(moveDuration);
@@ -207,5 +209,17 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(new Vector2(1.0f * horizontalForce, jumpForce), ForceMode2D.Impulse);
             isGrounded = false;  // Prevent further jumping in mid-air
         }
+    }
+
+    // Wait until the player is grounded, then execute the jump and move
+    IEnumerator WaitForGroundAndExecute(System.Action action)
+    {
+        while (!isGrounded)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        action();  // Execute the action (jump and move)
+        yield return new WaitForSeconds(1.5f);  // Wait for jump completion
     }
 }

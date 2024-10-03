@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     private Queue<string> movementQueue = new Queue<string>();
     private List<string> movementList = new List<string>();
     public EnemyController enemy;  // Reference to the enemy's controller script
-    public float horizontalForce = 2f; // Force applied when moving horizontally
+    private int playCount = 0;     // Track how many times play has been pressed
 
 
     public Button playButton;
@@ -138,10 +138,13 @@ public class PlayerController : MonoBehaviour
             isPlaying = true;
             StartCoroutine(ExecutePlannedMovement());
 
+            // Increase the play count every time the play button is pressed
+            playCount++;
+
             // Trigger the enemy's movement when the player starts moving
             if (enemy != null)
             {
-                enemy.StartEnemyMovement();
+                enemy.StartEnemyMovement(playCount);
             }
         }
     }

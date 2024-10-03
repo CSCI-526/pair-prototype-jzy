@@ -33,10 +33,16 @@ public class WinLoseController : MonoBehaviour
     void CheckIfPlayerWon()
     {
         // Get the player's position in screen space
-        Vector3 playerPositionInView = mainCamera.WorldToViewportPoint(player.position);
+        //Vector3 playerPositionInView = mainCamera.WorldToViewportPoint(player.position);
+
+        // Get the right edge of the camera in world coordinates
+        float cameraRightEdge = mainCamera.ViewportToWorldPoint(new Vector3(1, 0, 0)).x;
 
         // Check if the player's x-position is greater than 1 (out of the right side of the camera view)
-        if (playerPositionInView.x > 1)
+        //if (playerPositionInView.x > 1)
+
+        // Check if the player's x-position is greater than or equal to the camera's right edge
+        if (player.position.x >= cameraRightEdge)
         {
             // Display "Win!!" message
             winLoseText.text = "Player Wins!!";

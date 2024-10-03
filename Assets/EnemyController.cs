@@ -12,6 +12,9 @@ public class EnemyController : MonoBehaviour
     private Queue<string> movementQueue = new Queue<string>();  // Stores planned movements
     private bool isMoving = false;   // Is the enemy currently moving?
 
+    private float horizontalForce = -2f;
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -70,11 +73,7 @@ public class EnemyController : MonoBehaviour
                     yield return StartCoroutine(MoveEnemy(Vector2.left));
                     break;
                 case "jump":
-                    if (isGrounded)
-                    {
-                        Jump();
-                        yield return new WaitForSeconds(1f);  // Wait for jump completion
-                    }
+                    yield return StartCoroutine(WaitForGroundAndExecute(() => Jump()));
                     break;
                 default:
                     yield return null;
@@ -112,7 +111,8 @@ public class EnemyController : MonoBehaviour
     {
         if (isGrounded)
         {
-            rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            rb.AddForce(new Vector2(horizontalForce, jumpForce), ForceMode2D.Impulse);
+            isGrounded = false;
         }
     }
 
@@ -121,5 +121,16 @@ public class EnemyController : MonoBehaviour
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);
         isGrounded = hit.collider != null;
+    }
+
+    IEnumerator WaitForGroundAndExecute(System.Action action)
+    {
+        while (!isGrounded)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        action();  // Execute the action (jump and move)
+        yield return new WaitForSeconds(1.5f);  // Wait for jump completion
     }
 }

@@ -15,8 +15,7 @@ public class PlayerController : MonoBehaviour
     private List<string> movementList = new List<string>();
     public EnemyController enemy;  // Reference to the enemy's controller script
     private int playCount = 0;     // Track how many times play has been pressed
-    public float horizontalForce = 2f;
-
+    private float horizontalForce = 2f;
 
     public Button playButton;
     private Rigidbody2D rb;
@@ -184,7 +183,7 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator MovePlayer(Vector2 direction)
     {
-        float moveDistance = Camera.main.orthographicSize * 2 * Camera.main.aspect / 10f;
+        float moveDistance = 3f;
         Vector2 targetPosition = rb.position + new Vector2(direction.x * moveDistance, 0);
 
         float elapsedTime = 0f;
@@ -206,7 +205,7 @@ public class PlayerController : MonoBehaviour
     {
         if (isGrounded)
         {
-            rb.AddForce(new Vector2(1.0f * horizontalForce, jumpForce), ForceMode2D.Impulse);
+            rb.AddForce(new Vector2(horizontalForce, jumpForce), ForceMode2D.Impulse);
             isGrounded = false;  // Prevent further jumping in mid-air
         }
     }

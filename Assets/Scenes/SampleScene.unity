@@ -2148,7 +2148,6 @@ MonoBehaviour:
   jumpForce: 6
   moveDuration: 1
   enemy: {fileID: 1794457000}
-  horizontalForce: 2
   playButton: {fileID: 1799817067}
   movementText: {fileID: 805406569}
 --- !u!1 &1869420213
@@ -2474,7 +2473,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Enemy Planned Movements: \nTURN 1: left left wait\nTURN 2:jump left left"
+  m_text: "Enemy Planned Movements: \nTURN 1: left left wait\nTURN 2: jump left left"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

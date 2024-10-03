@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
 
     public Button playButton;
     private Rigidbody2D rb;
+    private int maxInputsPerTurn = 3;
 
     // Reference to the UI Text to display the movements
     //public Text movementText;  // Standard UI Text
@@ -58,35 +59,39 @@ public class PlayerController : MonoBehaviour
         isGrounded = hit.collider != null;
     }
 
-    // Method to plan player movement input
+    // Method to plan player movement input, only allows 3 inputs
     void PlanMovementInput()
     {
-        if (Input.GetKeyDown(KeyCode.D))
+        // Only allow more inputs if we have less than the max allowed inputs
+        if (movementList.Count < maxInputsPerTurn)
         {
-            movementQueue.Enqueue("right");
-            movementList.Add("right");
-            UpdateMovementText();  // Update the UI Text
-        }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                movementQueue.Enqueue("right");
+                movementList.Add("right");
+                UpdateMovementText();  // Update the UI Text
+            }
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            movementQueue.Enqueue("left");
-            movementList.Add("left");
-            UpdateMovementText();  // Update the UI Text
-        }
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                movementQueue.Enqueue("left");
+                movementList.Add("left");
+                UpdateMovementText();  // Update the UI Text
+            }
 
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            movementQueue.Enqueue("jump");
-            movementList.Add("jump");
-            UpdateMovementText();  // Update the UI Text
-        }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                movementQueue.Enqueue("jump");
+                movementList.Add("jump");
+                UpdateMovementText();  // Update the UI Text
+            }
 
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            movementQueue.Enqueue("wait");
-            movementList.Add("wait");
-            UpdateMovementText();  // Update the UI Text
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                movementQueue.Enqueue("wait");
+                movementList.Add("wait");
+                UpdateMovementText();  // Update the UI Text
+            }
         }
     }
 

@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     private List<string> movementList = new List<string>();
     public EnemyController enemy;  // Reference to the enemy's controller script
     private int playCount = 0;     // Track how many times play has been pressed
+    public float horizontalForce = 2f;
 
 
     public Button playButton;

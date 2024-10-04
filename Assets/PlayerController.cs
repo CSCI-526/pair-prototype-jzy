@@ -7,7 +7,7 @@ using TMPro;  // Uncomment if using TextMeshPro
 
 public class PlayerController : MonoBehaviour
 {
-    public float jumpForce = 5f;
+    public float jumpForce = 7f;
     public float moveDuration = 1f;
     private bool isGrounded = true;
     private bool isPlaying = false;
@@ -15,10 +15,11 @@ public class PlayerController : MonoBehaviour
     private List<string> movementList = new List<string>();
     public EnemyController enemy;  // Reference to the enemy's controller script
     private int playCount = 0;     // Track how many times play has been pressed
-
+    private float horizontalForce = 2f;
 
     public Button playButton;
     private Rigidbody2D rb;
+    private int maxInputsPerTurn = 3;
 
     // Reference to the UI Text to display the movements
     //public Text movementText;  // Standard UI Text
@@ -35,8 +36,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.1f);
-        isGrounded = hit.collider != null;
+        CheckIfGrounded();
 
         PlanMovementInput();
 
@@ -52,35 +52,46 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Method to plan player movement input
+    // Method to check if the player is grounded
+    private void CheckIfGrounded()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 0.3f);
+        isGrounded = hit.collider != null;
+    }
+
+    // Method to plan player movement input, only allows 3 inputs
     void PlanMovementInput()
     {
-        if (Input.GetKeyDown(KeyCode.D))
+        // Only allow more inputs if we have less than the max allowed inputs
+        if (movementList.Count < maxInputsPerTurn)
         {
-            movementQueue.Enqueue("right");
-            movementList.Add("right");
-            UpdateMovementText();  // Update the UI Text
-        }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                movementQueue.Enqueue("right");
+                movementList.Add("right");
+                UpdateMovementText();  // Update the UI Text
+            }
 
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            movementQueue.Enqueue("left");
-            movementList.Add("left");
-            UpdateMovementText();  // Update the UI Text
-        }
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                movementQueue.Enqueue("left");
+                movementList.Add("left");
+                UpdateMovementText();  // Update the UI Text
+            }
 
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            movementQueue.Enqueue("jump");
-            movementList.Add("jump");
-            UpdateMovementText();  // Update the UI Text
-        }
+            if (Input.GetKeyDown(KeyCode.W))
+            {
+                movementQueue.Enqueue("jump");
+                movementList.Add("jump");
+                UpdateMovementText();  // Update the UI Text
+            }
 
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            movementQueue.Enqueue("wait");
-            movementList.Add("wait");
-            UpdateMovementText();  // Update the UI Text
+            if (Input.GetKeyDown(KeyCode.S))
+            {
+                movementQueue.Enqueue("wait");
+                movementList.Add("wait");
+                UpdateMovementText();  // Update the UI Text
+            }
         }
     }
 
@@ -164,11 +175,7 @@ public class PlayerController : MonoBehaviour
                     yield return StartCoroutine(MovePlayer(Vector2.left));
                     break;
                 case "jump":
-                    if (isGrounded)
-                    {
-                        Jump();
-                        yield return new WaitForSeconds(1f);
-                    }
+                    yield return StartCoroutine(WaitForGroundAndExecute(() => Jump()));
                     break;
                 case "wait":
                     yield return new WaitForSeconds(moveDuration);
@@ -177,11 +184,12 @@ public class PlayerController : MonoBehaviour
         }
 
         isPlaying = false;
+        ClearAllInputs();
     }
 
     IEnumerator MovePlayer(Vector2 direction)
     {
-        float moveDistance = Camera.main.orthographicSize * 2 * Camera.main.aspect / 10f;
+        float moveDistance = 3f;
         Vector2 targetPosition = rb.position + new Vector2(direction.x * moveDistance, 0);
 
         float elapsedTime = 0f;
@@ -203,7 +211,20 @@ public class PlayerController : MonoBehaviour
     {
         if (isGrounded)
         {
-            rb.AddForce(new Vector2(0, jumpForce), ForceMode2D.Impulse);
+            rb.AddForce(new Vector2(horizontalForce, jumpForce), ForceMode2D.Impulse);
+            isGrounded = false;  // Prevent further jumping in mid-air
         }
+    }
+
+    // Wait until the player is grounded, then execute the jump and move
+    IEnumerator WaitForGroundAndExecute(System.Action action)
+    {
+        while (!isGrounded)
+        {
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        action();  // Execute the action (jump and move)
+        yield return new WaitForSeconds(1.5f);  // Wait for jump completion
     }
 }

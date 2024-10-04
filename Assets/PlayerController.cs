@@ -184,6 +184,7 @@ public class PlayerController : MonoBehaviour
         }
 
         isPlaying = false;
+        ClearAllInputs();
     }
 
     IEnumerator MovePlayer(Vector2 direction)

@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;  
+using UnityEngine.SceneManagement;
+
 public class WinLoseController : MonoBehaviour
 {
     public Transform player;         // Reference to the player object
@@ -56,5 +58,12 @@ public class WinLoseController : MonoBehaviour
         winLoseText.text = "Enemy Wins...";
         winLoseText.color = Color.yellow;
         player.GetComponent<PlayerController>().enabled = false;  // Stop player movement
+        Invoke("ResetGame", 2.0f); // Reset the game
+    }
+
+    void ResetGame()
+    {
+        // Reset the game scene
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
